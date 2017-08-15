@@ -2,8 +2,7 @@
 
 namespace app\modules\users\models;
 
-use app\models\currency;
-use app\models\User;
+use app\models\Currency;
 use yii\db\ActiveRecord;
 
 /**
@@ -54,21 +53,25 @@ class UsersBalance extends ActiveRecord {
 
 
     public function getBalance($user_id) {
-        $data = self::find()->where(['user_id' => $user_id])->joinWith('currency')->one();
+        $model = new UsersBalance();
+        $data = $model->find()->where(['user_id' => $user_id])->joinWith('currency')->one();
         if($data){
-            $data = $this->createNewBalance(0,$user_id);
+            $data = $model->createNewBalance(0,$user_id);
             if(!$data)
                 return 0;
         }
         return $data->value;
     }
+
+
     public function getBalanceInFormat($user_id) {
-        $data = self::find()->where(['user_id' => $user_id])->joinWith('currency')->one();
+        $model = new UsersBalance();
+        $data = $model->find()->where(['user_id' => $user_id])->joinWith('currency')->one();
         if(!$data){
             return 'Currency ERROR';
         }
         $currency_CLASS = 'app\models\currency\Currency'.$data->currency->code;
-        return $currency_CLASS::format($this->getBalance($user_id));
+        return $currency_CLASS::format($model->getBalance($user_id));
     }
 
     /**
@@ -78,6 +81,9 @@ class UsersBalance extends ActiveRecord {
         return '{{%user_balance}}';
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getCurrency()
     {
         return $this->hasOne(Currency::className(), ['id' => 'currency_id']);
